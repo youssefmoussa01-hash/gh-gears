@@ -21,7 +21,7 @@
   }
 
   *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  
   body{
     background:var(--black);
     color:var(--chrome);
@@ -506,13 +506,26 @@
 
 <!-- Firebase SDKs & App Engine -->
 <script type="module">
-  // Force manual scroll position lock so phones don't auto-jump
+  // 1. Force manual scroll position lock
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
   }
-  window.scrollTo(0, 0);
+
+  // 2. Clear lingering anchor hashes (like #shop) from the URL so the browser doesn't hunt for it
+  if (window.location.hash) {
+    window.history.replaceState(null, null, window.location.pathname + window.location.search);
+  }
+
+  // 3. Force an instant, non-animated jump to the top
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
   window.addEventListener('load', () => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    
+    // 4. Safely re-enable smooth scrolling for your navigation links AFTER the page settles
+    setTimeout(() => {
+      document.documentElement.style.scrollBehavior = 'smooth';
+    }, 100);
   });
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
