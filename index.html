@@ -78,24 +78,37 @@
   @keyframes spin{ to{ transform:rotate(360deg);} }
   .logo span.accent{color:var(--black); background: var(--chrome); padding: 0 4px;}
 
-  .nav-links{ display:flex;gap:36px; font-size:13px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.1em; }
+  .nav-links{ display:flex;gap:36px; font-size:13px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.1em; align-items: center; }
   .nav-links a{ position:relative; padding-bottom:4px; color:var(--dim); transition:color .25s; }
   .nav-links a::after{ content:"";position:absolute;left:0;bottom:0;width:0;height:1px; background:var(--chrome); transition:width .3s; }
   .nav-links a:hover{color:var(--chrome);}
   .nav-links a:hover::after{width:100%;}
-  @media (max-width: 900px){ .nav-links{display:none;} }
 
-  .nav-cta{ display:flex;align-items:center;gap:18px; }
+  .nav-cta{ display:flex;align-items:center;gap:14px; }
+  
+  /* Mobile menu button & drawer links */
+  .track-pill{
+    border:1px solid var(--steel); font-family:var(--mono); font-size:11px; text-transform:uppercase;
+    padding:8px 12px; border-radius:20px; background:transparent; color:var(--chrome); letter-spacing:.05em;
+    transition:0.2s; display:inline-flex; align-items:center; gap:6px;
+  }
+  .track-pill:hover{ background:var(--chrome); color:var(--black); border-color:var(--chrome); }
+
   .cart-btn{
     position:relative; border:1px solid var(--steel); width:40px;height:40px;border-radius:50%;
     display:flex;align-items:center;justify-content:center; background:transparent; color: var(--chrome);
-    transition:border-color .25s, transform .25s;
+    transition:border-color .25s, transform .25s; flex-shrink: 0;
   }
   .cart-btn:hover{ border-color:var(--chrome); transform:rotate(-8deg); }
   .cart-count{
     position:absolute; top:-6px; right:-6px; background:var(--chrome); color:var(--black);
     font-family:var(--mono); font-weight:700; font-size:10px; width:18px;height:18px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
+  }
+
+  @media(max-width: 768px) {
+    nav { padding: 14px 16px; }
+    .nav-links { display: none; } /* Hide heavy desktop nav text elements if needed, keeping track-pill visible */
   }
 
   /* ============ HERO ============ */
@@ -115,7 +128,7 @@
   .hero-tag .dot{ width:7px;height:7px;border-radius:50%;background:var(--chrome); box-shadow:0 0 8px var(--chrome); animation:pulse 1.6s ease-in-out infinite; }
   @keyframes pulse{ 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.4; transform:scale(1.4);} }
 
-  h1.hero-title{ font-family:var(--display); text-transform:uppercase; font-size:clamp(52px, 9vw, 128px); line-height:.92; letter-spacing:-.01em; max-width:1000px; color: var(--chrome); }
+  h1.hero-title{ font-family:var(--display); text-transform:uppercase; font-size:clamp(46px, 9vw, 128px); line-height:.92; letter-spacing:-.01em; max-width:1000px; color: var(--chrome); }
   h1.hero-title .line{ display:block; overflow:hidden; }
   h1.hero-title .line span{ display:inline-block; transform:translateY(110%); animation:riseUp .9s cubic-bezier(.16,1,.3,1) forwards; }
   h1.hero-title .line:nth-child(1) span{animation-delay:.1s;}
@@ -141,23 +154,24 @@
   .btn-primary svg{ position:relative; z-index:1; transition:transform .3s; }
   .btn-primary:hover svg{ transform:translateX(4px) rotate(90deg); }
 
-  section{ padding:120px 0; position:relative; }
-  .sec-head{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:56px; flex-wrap:wrap; gap:20px; }
-  .sec-title{ font-family:var(--display); text-transform:uppercase; font-size:clamp(34px,4.6vw,58px); line-height:.95; margin-top:14px; max-width:640px; color: var(--chrome); }
+  section{ padding:100px 0; position:relative; }
+  .sec-head{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:48px; flex-wrap:wrap; gap:20px; }
+  .sec-title{ font-family:var(--display); text-transform:uppercase; font-size:clamp(30px,4.6vw,58px); line-height:.95; margin-top:14px; max-width:640px; color: var(--chrome); }
 
   .reveal{ opacity:0; transform:translateY(30px); transition:opacity .6s ease, transform .6s ease; }
   .reveal.show{ opacity:1; transform:translateY(0); }
 
-  /* ============ GRID & MOBILE UPDATES ============ */
+  /* ============ GRID & MOBILE ADAPTATIONS ============ */
   .grid4{ display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
   @media (max-width:1100px){ .grid4{ grid-template-columns:repeat(2,1fr);} }
   @media (max-width:620px){ 
-    .grid4{ grid-template-columns:repeat(2,1fr); gap:10px; } 
+    .grid4{ grid-template-columns:repeat(2,1fr); gap:12px; } 
     .wrap { padding: 0 16px; }
+    .hero-inner { padding: 0 16px; }
     .card-body { padding: 12px; gap: 8px; }
     .card-body h3 { font-size: 14px; }
     .price-now { font-size: 13px; }
-    .add-btn { font-size: 10px; padding: 10px 8px; }
+    .add-btn { font-size: 10px; padding: 10px 6px; }
     .add-btn svg { width: 12px; height: 12px; }
   }
 
@@ -176,7 +190,7 @@
     background:var(--panel-2);
     display:flex;align-items:center;justify-content:center;
   }
- .card-media img, .cart-item .thumb img, .upsell-card .thumb img {
+  .card-media img, .cart-item .thumb img, .upsell-card .thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -202,9 +216,9 @@
   .add-btn.added{ background:var(--chrome); border-color:var(--chrome); color:var(--black); }
 
   /* ============ CTA BAND ============ */
-  .cta-band{ position:relative; padding:120px 0; text-align:center; overflow:hidden; border-top:1px solid var(--steel-line); background: var(--panel); }
-  .cta-band h2{ font-family:var(--display); text-transform:uppercase; font-size:clamp(38px,7vw,90px); line-height:.95; position:relative; z-index:2; color: var(--chrome); }
-  .cta-band .btn-primary{ margin-top:44px; position:relative; z-index:2; }
+  .cta-band{ position:relative; padding:100px 0; text-align:center; overflow:hidden; border-top:1px solid var(--steel-line); background: var(--panel); }
+  .cta-band h2{ font-family:var(--display); text-transform:uppercase; font-size:clamp(36px,7vw,90px); line-height:.95; position:relative; z-index:2; color: var(--chrome); }
+  .cta-band .btn-primary{ margin-top:36px; position:relative; z-index:2; }
 
   /* ============ FOOTER ============ */
   footer{ background:var(--panel); border-top:1px solid var(--steel-line); padding:60px 0 30px; }
@@ -213,11 +227,8 @@
     gap:32px; padding-bottom:36px; border-bottom:1px solid var(--steel-line);
   }
   .foot-col{ display:flex; align-items:center; gap:28px; }
-  .foot-col h4{ display:none; }
   .foot-col a{ display:flex; align-items:center; gap:8px; font-size:13px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.08em; color:var(--dim); width:fit-content; position:relative; transition:color .25s; }
   .foot-col a:hover{ color:var(--chrome); }
-  .foot-col a::after{ content:""; position:absolute; left:0; bottom:-4px; width:0; height:1px; background:var(--chrome); transition:width .3s; }
-  .foot-col a:hover::after{ width:100%; }
   .foot-bottom{
     display:flex; justify-content:space-between; align-items:center; padding-top:26px;
     font-family:var(--mono); font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; flex-wrap:wrap; gap:12px;
@@ -372,13 +383,18 @@
       </svg>
       GH<span class="accent">-GEARS</span>
     </div>
+    
+    <!-- Clean desktop & mobile visible tracking + shop links (About removed) -->
     <div class="nav-links">
       <a href="#shop">Shop</a>
-      <a href="#about">About</a>
       <a href="#contact">Contact</a>
-      <a href="#" id="trackNavBtn">Track Order</a>
     </div>
+    
     <div class="nav-cta">
+      <button class="track-pill" id="trackNavBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>Track</span>
+      </button>
       <button class="cart-btn" id="cartOpenBtn" aria-label="Open cart">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6h15l-1.5 9h-12L4 3H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="18" cy="20" r="1.4" fill="currentColor"/></svg>
         <span class="cart-count" id="cartCount">0</span>
@@ -432,7 +448,7 @@
   <div class="wrap">
     <div class="foot-grid">
       <div class="foot-col">
-        <div class="logo" id="about">GH<span class="accent">-GEARS</span></div>
+        <div class="logo">GH<span class="accent">-GEARS</span></div>
       </div>
       <div class="foot-col">
         <a href="#shop">Straps &amp; Wraps</a>
@@ -485,12 +501,11 @@
     </div>
     <button class="place-order-btn" id="trackSubmitBtn"><span>Check Status</span></button>
     
-    <!-- This div will populate with the full order details -->
     <div id="trackResult" style="margin-top: 24px; font-family: var(--mono); text-transform: uppercase;"></div>
   </div>
 </div>
 
-<!-- Firebase SDKs -->
+<!-- Firebase SDKs & App Engine -->
 <script type="module">
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
@@ -699,12 +714,10 @@
         const orderData = snap.docs[0].data();
         const stat = orderData.status || "Pending";
         
-        // Format the items list
         const itemsList = orderData.items 
           ? orderData.items.map(i => `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>${i.qty}x ${i.name}</span><span>LE ${(i.price * i.qty).toFixed(2)}</span></div>`).join('') 
           : 'No items found';
 
-        // Display full order details receipt
         res.innerHTML = `
           <div style="text-align:left; background:var(--panel-2); padding:20px; border-radius:4px; margin-top:16px;">
             <div style="margin-bottom:18px; font-size:18px; border-bottom:1px solid var(--steel-line); padding-bottom:10px;">
@@ -752,7 +765,7 @@
       if(!p) return '';
       return `<div class="order-line"><span>${p.name} × ${qty}</span><span>${fmt(p.price*qty)}</span></div>`;
     }).join('');
-    const shipping = 60; // HARDCODED 60 EGP
+    const shipping = 60;
     const grand = cartTotal() + shipping;
 
     modalBox.innerHTML = `
@@ -791,7 +804,6 @@
               <div class="err-msg">Enter a valid email address.</div>
             </div>
 
-            <!-- CHANGED: City/Area is now an input field instead of a dropdown -->
             <div class="field">
               <label>City / Area</label>
               <input type="text" id="f-area" placeholder="e.g. Nasr City" required>
@@ -841,7 +853,7 @@
     const email = document.getElementById('f-email').value.trim();
     const area = document.getElementById('f-area').value.trim();
     const address = document.getElementById('f-address').value.trim();
-    const payMethod = 'cod'; // Fixed to Cash on Delivery
+    const payMethod = 'cod';
 
     const phoneOk = /^01[0-2,5]\d{8}$/.test(phone.replace(/\s/g,''));
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -860,7 +872,7 @@
     submitBtn.querySelector('span').textContent = 'Processing...';
 
     const orderId = 'GH-' + Math.floor(100000 + Math.random()*899999);
-    const fullAddress = `${address}, ${area}, Egypt`; // Updated to use the typed area
+    const fullAddress = `${address}, ${area}, Egypt`;
 
     const orderData = {
       orderId,
@@ -876,7 +888,6 @@
     try {
       if (db) {
         await addDoc(collection(db, "orders"), orderData);
-        console.log("Order written to Firestore successfully!");
       }
     } catch (err) {
       console.error("Error writing document to Firestore:", err);
