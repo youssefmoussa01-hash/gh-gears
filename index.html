@@ -281,7 +281,7 @@
   .total-row b{ font-family:var(--display); font-size:26px; color: var(--chrome); }
   .total-row .lbl{ font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--dim); }
 
-  /* ============ CHECKOUT MODAL ============ */
+  /* ============ MODAL SYSTEM ============ */
   .modal{
     position:fixed; inset:0; z-index:1700; display:flex; align-items:flex-start; justify-content:center;
     padding:60px 20px; overflow-y:auto; opacity:0; pointer-events:none; transition:opacity .3s ease;
@@ -352,15 +352,6 @@
   .success-box h2{ font-family:var(--display); text-transform:uppercase; font-size:32px; margin-bottom:12px; color: var(--chrome); }
   .success-box p{ color:var(--dim); font-size:14px; line-height:1.7; max-width:400px; margin:0 auto; }
   .order-id{ font-family:var(--mono); color:var(--chrome); margin-top:18px; font-size:14px; letter-spacing:.05em; }
-
-  .sync-status {
-    position: fixed; bottom: 20px; left: 20px; z-index: 1800;
-    font-family: var(--mono); font-size: 11px; text-transform: uppercase;
-    background: var(--panel); border: 1px solid var(--steel-line); padding: 8px 14px;
-    border-radius: 4px; display: flex; align-items: center; gap: 8px; color: var(--dim);
-  }
-  .sync-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--chrome); }
-  .sync-status.live .dot { box-shadow: 0 0 8px var(--chrome); }
 </style>
 </head>
 <body>
@@ -385,6 +376,7 @@
       <a href="#shop">Shop</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
+      <a href="#" id="trackNavBtn">Track Order</a>
     </div>
     <div class="nav-cta">
       <button class="cart-btn" id="cartOpenBtn" aria-label="Open cart">
@@ -480,10 +472,33 @@
   <div class="modal-box" id="modalBox"></div>
 </div>
 
+<!-- ============ TRACK ORDER MODAL ============ -->
+<div class="modal" id="trackModal">
+  <div class="modal-box" style="max-width: 440px; text-align: center;">
+    <div class="modal-head">
+      <h2>Track Order</h2>
+      <button class="close-btn" id="trackCloseBtn">✕</button>
+    </div>
+    <p style="color:var(--dim); font-size:13px; margin-bottom:16px;">Enter your Order ID (e.g. GH-123456) to check its status.</p>
+    <div class="field" style="margin-bottom: 20px; text-align: left;">
+      <input type="text" id="trackInput" placeholder="Order ID..." style="text-align: center; font-family: var(--mono); font-size: 16px;">
+    </div>
+    <button class="place-order-btn" id="trackSubmitBtn"><span>Check Status</span></button>
+    
+    <!-- This div will populate with the full order details -->
+    <div id="trackResult" style="margin-top: 24px; font-family: var(--mono); text-transform: uppercase;"></div>
+  </div>
+</div>
+
 <!-- Firebase SDKs -->
 <script type="module">
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  window.scrollTo(0, 0);
+
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyADD-Dbgnnvipx43Usg85tSBICQetivLUA",
@@ -496,7 +511,6 @@
   };
 
   let db = null;
-
   try {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
@@ -644,23 +658,83 @@
     </div>`;
   }
 
-  // ===================== CART OPEN/CLOSE =====================
+  // ===================== CART & MODALS OPEN/CLOSE =====================
   const overlay = document.getElementById('overlay');
   const drawer = document.getElementById('cartDrawer');
+  const checkoutModal = document.getElementById('checkoutModal');
+  const trackModal = document.getElementById('trackModal');
+
   function openCart(){ drawer.classList.add('open'); overlay.classList.add('open'); }
   function closeCart(){ drawer.classList.remove('open'); overlay.classList.remove('open'); }
+  function closeCheckout(){ checkoutModal.classList.remove('open'); overlay.classList.remove('open'); }
+
   document.getElementById('cartOpenBtn').addEventListener('click', openCart);
   document.getElementById('cartCloseBtn').addEventListener('click', closeCart);
-  overlay.addEventListener('click', ()=>{ closeCart(); closeCheckout(); });
+  overlay.addEventListener('click', ()=>{ closeCart(); closeCheckout(); trackModal.classList.remove('open'); });
+
+  // ===================== TRACK ORDER =====================
+  document.getElementById('trackNavBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    trackModal.classList.add('open');
+    overlay.classList.add('open');
+  });
+
+  document.getElementById('trackCloseBtn').addEventListener('click', () => {
+    trackModal.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+
+  document.getElementById('trackSubmitBtn').addEventListener('click', async () => {
+    const val = document.getElementById('trackInput').value.trim();
+    const res = document.getElementById('trackResult');
+    if(!val) return;
+    res.innerHTML = "SEARCHING...";
+    
+    try {
+      const q = query(collection(db, "orders"), where("orderId", "==", val));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        res.innerHTML = "<span style='color:#ff4444; font-size: 14px;'>Order not found. Please check your ID.</span>";
+      } else {
+        const orderData = snap.docs[0].data();
+        const stat = orderData.status || "Pending";
+        
+        // Format the items list
+        const itemsList = orderData.items 
+          ? orderData.items.map(i => `<div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>${i.qty}x ${i.name}</span><span>LE ${(i.price * i.qty).toFixed(2)}</span></div>`).join('') 
+          : 'No items found';
+
+        // Display full order details receipt
+        res.innerHTML = `
+          <div style="text-align:left; background:var(--panel-2); padding:20px; border-radius:4px; margin-top:16px;">
+            <div style="margin-bottom:18px; font-size:18px; border-bottom:1px solid var(--steel-line); padding-bottom:10px;">
+              STATUS: <b style="color:var(--chrome);">${stat}</b>
+            </div>
+            
+            <div style="color:var(--dim); font-size:11px; margin-bottom:6px; font-weight:bold;">ORDER ITEMS:</div>
+            <div style="color:var(--chrome); font-size:13px; margin-bottom:16px; border-bottom:1px solid var(--steel-line); padding-bottom:10px;">
+              ${itemsList}
+            </div>
+            
+            <div style="color:var(--dim); font-size:11px; margin-bottom:6px; font-weight:bold;">DELIVERING TO:</div>
+            <div style="color:var(--chrome); font-size:13px; margin-bottom:16px; line-height: 1.4;">
+              ${orderData.customer?.name || 'Customer'}<br>
+              ${orderData.shippingAddress || 'N/A'}
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; font-size:16px; font-family:var(--display); color:var(--chrome); border-top:1px solid var(--steel-line); padding-top:12px;">
+              <span>TOTAL</span>
+              <span>LE ${orderData.total || '0.00'}</span>
+            </div>
+          </div>
+        `;
+      }
+    } catch(err) {
+      res.innerHTML = "<span style='color:#ff4444; font-size: 14px;'>Error connecting to database.</span>";
+    }
+  });
 
   // ===================== CHECKOUT MODAL =====================
-  const CAIRO_AREAS = [
-    'Al Manyal','Nasr City','Maadi','Zamalek','Heliopolis (Masr El Gedida)','Dokki',
-    'Mohandessin','Downtown Cairo','New Cairo','6th of October City','Garden City',
-    'Shubra','Helwan','Rehab City','Madinaty','Giza'
-  ];
-
-  const checkoutModal = document.getElementById('checkoutModal');
   const modalBox = document.getElementById('modalBox');
 
   function openCheckout(){
@@ -670,14 +744,9 @@
     checkoutModal.classList.add('open');
     overlay.classList.add('open');
   }
-  function closeCheckout(){
-    checkoutModal.classList.remove('open');
-    overlay.classList.remove('open');
-  }
   document.getElementById('checkoutBtn').addEventListener('click', openCheckout);
 
   function renderCheckoutForm(){
-    const areaOptions = CAIRO_AREAS.map(a=>`<option value="${a}">${a}</option>`).join('');
     const items = Object.entries(cart).map(([id,qty])=>{
       const p = productById(id);
       if(!p) return '';
@@ -722,14 +791,13 @@
               <div class="err-msg">Enter a valid email address.</div>
             </div>
 
+            <!-- CHANGED: City/Area is now an input field instead of a dropdown -->
             <div class="field">
               <label>City / Area</label>
-              <select id="f-area" required>
-                <option value="">Select area…</option>
-                ${areaOptions}
-              </select>
-              <div class="err-msg">Please select your area.</div>
+              <input type="text" id="f-area" placeholder="e.g. Nasr City" required>
+              <div class="err-msg">Please enter your city or area.</div>
             </div>
+            
             <div class="field">
               <label>Delivery Address</label>
               <input type="text" id="f-address" placeholder="12 El-Tahrir Street" required>
@@ -771,7 +839,7 @@
     const name = document.getElementById('f-name').value.trim();
     const phone = document.getElementById('f-phone').value.trim();
     const email = document.getElementById('f-email').value.trim();
-    const area = document.getElementById('f-area').value;
+    const area = document.getElementById('f-area').value.trim();
     const address = document.getElementById('f-address').value.trim();
     const payMethod = 'cod'; // Fixed to Cash on Delivery
 
@@ -792,7 +860,7 @@
     submitBtn.querySelector('span').textContent = 'Processing...';
 
     const orderId = 'GH-' + Math.floor(100000 + Math.random()*899999);
-    const fullAddress = `${address}, ${area}, Cairo`;
+    const fullAddress = `${address}, ${area}, Egypt`; // Updated to use the typed area
 
     const orderData = {
       orderId,
@@ -801,7 +869,7 @@
       items: Object.entries(cart).map(([id, qty]) => ({ id, name: productById(id).name, price: productById(id).price, qty })),
       total: grandTotal,
       paymentMethod: payMethod,
-      status: 'Pending',
+      status: 'Awaiting Shipment',
       createdAt: serverTimestamp()
     };
 
